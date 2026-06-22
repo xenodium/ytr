@@ -4,7 +4,7 @@
 
 An Emacs package to stream YouTube audio (powered by [[https://github.com/yt-dlp/yt-dlp][yt-dlp]] and [[https://mpv.io][mpv]]).
 
-#+HTML: <img src="https://raw.githubusercontent.com/xenodium/ytr/main/screenshot.gif" width="75%" />
+#+HTML: <img src="https://raw.githubusercontent.com/xenodium/ytr/main/screenshot.gif" width="70%" />
 
 * Install / Setup
 
