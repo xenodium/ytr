@@ -1,0 +1,87 @@
+👉 [[https://github.com/sponsors/xenodium][Support this work via GitHub Sponsors]]
+
+* YouTube Radio (ytr)
+
+An Emacs package to stream YouTube audio (powered by [[https://github.com/yt-dlp/yt-dlp][yt-dlp]] and [[https://mpv.io][mpv]]).
+
+#+HTML: <img src="https://raw.githubusercontent.com/xenodium/ytr/main/screenshot.gif" width="60%" />
+
+* Install / Setup
+
+#+begin_src emacs-lisp :lexical no
+  (use-package ytr
+    :vc (:url "https://github.com/xenodium/ytr" :rev :newest)
+    :commands (ytr))
+#+end_src
+
+Then =M-x ytr= to open the player. The first time, you'll be prompted for a channel or playlist URL.
+
+* Usage
+
+- =M-x ytr= toggles player display.
+- Press =+= to add a YouTube channel or playlist URL, for example:
+  - A channel: =https://www.youtube.com/@TOKYOECHOSOUNDS=
+  - A playlist or mix: =https://www.youtube.com/playlist?list=...=
+- Press =/= to pick any track across all your channels, or =s= to pick a channel and play its first track.
+- =SPC= toggles play/pause, =n= / =p= move between tracks, and =f= / =b= seek.
+
+* Player key bindings
+
+| Key       | Command             | Description                                          |
+|-----------+---------------------+------------------------------------------------------|
+| =SPC=       | ytr-toggle-play     | Toggle play/pause, or resume the last played track.  |
+| =n=         | ytr-next            | Play the next track in the catalog.                  |
+| =p=         | ytr-previous        | Play the previous track in the catalog.              |
+| =f=         | ytr-seek-forward    | Seek forward (5 seconds by default).                 |
+| =b=         | ytr-seek-backward   | Seek backward (5 seconds by default).                |
+| =/=         | ytr-play-track      | Select a track from all channels and play it.        |
+| =s=         | ytr-play-channel    | Select a channel and play its first track.           |
+| =+=         | ytr-add-channel     | Prompt for a channel/playlist URL, add it, and play. |
+| =o=         | ytr-open-in-browser | Open the current track in a web browser.             |
+| =TAB=       | ytr-forward-button  | Move point to the next button.                       |
+| =<backtab>= | ytr-backward-button | Move point to the previous button.                   |
+| =q=         | ytr-quit            | Hide the player (playback continues).                |
+
+With a numeric prefix, =f= / =b= seek that many seconds; with a plain prefix (=C-u=), they seek in minutes.
+
+* External dependencies
+
+=ytr= requires a graphical Emacs (it renders images in a child frame), plus two command line tools in your =exec-path=:
+
+- [[https://github.com/yt-dlp/yt-dlp][yt-dlp]] — fetches channel/playlist listings.
+- [[https://mpv.io][mpv]] — plays the audio.
+
+On macOS:
+
+#+begin_src sh
+  brew install yt-dlp mpv
+#+end_src
+
+* Customizations
+
+** Buttons (macOS SF Symbols)
+
+If you have [[https://lmno.lol/alvaro/emacs-insert-and-render-sf-symbols][SF symbol rendering in Emacs]] on macOS, enable them in the player's buttons with:
+
+#+begin_src emacs-lisp :lexical no
+  (ytr-macos-use-sf-symbols)
+#+end_src
+
+** Button icons
+
+Each button icon is a variable you can set to any string, for example:
+
+#+begin_src emacs-lisp :lexical no
+  (setq ytr-play-icon "▶"
+        ytr-stop-icon "■"
+        ytr-next-icon "▷▷"
+        ytr-previous-icon "◁◁")
+#+end_src
+
+* Works on my machine ¯\_(ツ)_/¯
+
+While I've spent a bunch of time handling edge cases affecting my preferred flow, I've likely omitted addressing a wider range of usages. If you'd like me to extend it to those, please consider [[https://github.com/sponsors/xenodium][sponsoring]] the work.
+
+* Like this package? Please consider sponsoring
+
+As an indie dev, building Emacs packages takes time away from activities that help pay the bills. If you like this package, consider making the effort sustainable by [[https://github.com/sponsors/xenodium][sponsoring]].
