@@ -48,8 +48,8 @@ With a numeric prefix, =f= / =b= seek that many seconds; with a plain prefix (=C
 
 =ytr= requires a graphical Emacs (it renders images in a child frame), plus two command line tools in your =exec-path=:
 
-- [[https://github.com/yt-dlp/yt-dlp][yt-dlp]] — fetches channel/playlist listings.
-- [[https://mpv.io][mpv]] — plays the audio.
+- [[https://github.com/yt-dlp/yt-dlp][yt-dlp]]: fetches channel/playlist listings.
+- [[https://mpv.io][mpv]]: plays the audio.
 
 On macOS:
 
