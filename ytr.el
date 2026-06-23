@@ -35,6 +35,8 @@
 (require 'map)
 (require 'seq)
 (require 'url)
+(require 'url-parse)
+(require 'url-util)
 (eval-when-compile
   (require 'cl-lib))
 
@@ -183,12 +185,22 @@ For example, (ytr--track \"8rUx3tYqg9Q\") => ((:id . \"8rUx3tYqg9Q\") ...)."
 (defun ytr--channel-name (channel)
   "Return CHANNEL's display name.
 
-Falls back from the channel name to the owning account, then the
-playlist title, since mixes and playlists have no channel name."
-  (or (map-elt channel :name)
-      (map-elt channel :uploader)
-      (map-elt channel :title)
-      ""))
+For a playlist or mix, prefer its title (the playlist name itself)
+over the owning account.  For a channel, prefer the channel name,
+falling back to the owning account and then the title.
+
+For example, a `:kind' \\='channel with :name \"TOKYO ECHO SOUNDS\"
+returns \"TOKYO ECHO SOUNDS\", while a `:kind' \\='playlist with
+:title \"Bending Emacs\" returns \"Bending Emacs\"."
+  (if (eq (map-elt channel :kind) 'playlist)
+      (or (map-elt channel :title)
+          (map-elt channel :name)
+          (map-elt channel :uploader)
+          "")
+    (or (map-elt channel :name)
+        (map-elt channel :uploader)
+        (map-elt channel :title)
+        "")))
 
 ;;; YouTube
 
@@ -218,6 +230,39 @@ set to \\='(\"Music\"), returns a track alist whose `:music-p' is t."
    :track-name (map-elt json 'track)
    :album      (map-elt json 'album)))
 
+(defun ytr--youtube-playlist-p (url)
+  "Return non-nil when URL is a playlist or mix.
+
+Parses URL's query string and checks for a `list' key, rather than
+matching the raw string, so it is not fooled by, say, a `list' inside
+another value.
+
+For example, a \"...playlist?list=PL123\" or \"...watch?v=x&list=RD\"
+URL returns non-nil, while \"https://www.youtube.com/@chan\" returns
+nil."
+  (map-contains-key
+   (url-parse-query-string
+    (or (cdr (url-path-and-query (url-generic-parse-url url))) ""))
+   "list"))
+
+(defun ytr--youtube-listing-url (url)
+  "Return the yt-dlp listing URL for URL.
+
+Channel URLs target their Videos tab, since the default tab need not
+list every upload.  Playlist and mix URLs are used as-is, since
+appending a path would corrupt the query (see `ytr--youtube-playlist-p').
+
+For example:
+
+  (ytr--youtube-listing-url \"https://www.youtube.com/@TOKYOECHOSOUNDS\")
+  => \"https://www.youtube.com/@TOKYOECHOSOUNDS/videos\"
+
+  (ytr--youtube-listing-url \"https://www.youtube.com/playlist?list=PL123\")
+  => \"https://www.youtube.com/playlist?list=PL123\""
+  (cond ((ytr--youtube-playlist-p url) url)
+        ((string-suffix-p "/videos" url) url)
+        (t (concat url "/videos"))))
+
 (cl-defun ytr--youtube-fetch-channel (&key url)
   "Fetch the channel at URL via yt-dlp and return a channel alist.
 
@@ -232,21 +277,25 @@ yt-dlp is missing or fails."
   (with-temp-buffer
     (unless (zerop (call-process "yt-dlp" nil (list t nil) nil
                                  "--flat-playlist" "--dump-single-json"
-                                 (concat url "/videos")))
+                                 (ytr--youtube-listing-url url)))
       (error "Failed to fetch %s with yt-dlp" url))
     (goto-char (point-min))
     (let* ((json (json-parse-buffer :object-type 'alist :array-type 'list
                                     :null-object nil :false-object nil))
-           ;; A mix or playlist has no channel of its own; key it by its
-           ;; own id then.
-           (id (or (map-elt json 'channel_id) (map-elt json 'id))))
+           (playlist (ytr--youtube-playlist-p url))
+           ;; Key a playlist or mix by its own listing id, not the owner's
+           ;; channel id: two playlists from one creator (or a creator's
+           ;; channel and one of their playlists) would otherwise collide.
+           (id (if playlist
+                   (map-elt json 'id)
+                 (or (map-elt json 'channel_id) (map-elt json 'id)))))
       (ytr--make-channel
        :id id
        :name (map-elt json 'channel)
        :uploader (or (map-elt json 'uploader) (map-elt json 'playlist_uploader))
        :title (map-elt json 'title)
        :url url
-       :kind 'channel
+       :kind (if playlist 'playlist 'channel)
        :tracks (seq-map (lambda (entry)
                           (let ((track (ytr--youtube-track-from-json
                                         :json entry :channel-id id)))
@@ -606,7 +655,7 @@ sentinel, where the current buffer is unrelated."
             channel)
       (ytr--save)
       (message "Added %s (%d tracks)"
-               (map-elt channel :name)
+               (ytr--channel-name channel)
                (map-length (map-elt channel :tracks)))
       (if-let* ((track (seq-first (map-values (map-elt channel :tracks)))))
           (ytr--play track)
@@ -626,7 +675,7 @@ sentinel, where the current buffer is unrelated."
   "Select a channel and play its first track."
   (interactive)
   (let ((choices (seq-map (lambda (channel)
-                            (cons (map-elt channel :name) channel))
+                            (cons (ytr--channel-name channel) channel))
                           (map-values (map-elt ytr--state :channels)))))
     (unless choices
       (user-error "No channels yet.  Press + to add a channel"))
