@@ -35,8 +35,9 @@ Then =M-x ytr= to open the player. The first time, you'll be prompted for a chan
 | =f=         | ytr-seek-forward    | Seek forward (5 seconds by default).                 |
 | =b=         | ytr-seek-backward   | Seek backward (5 seconds by default).                |
 | =/=         | ytr-play-track      | Select a track from all channels and play it.        |
-| =s=         | ytr-play-channel    | Select a channel and play its first track.           |
+| =c=         | ytr-play-channel    | Select a channel and play its first track.           |
 | =+=         | ytr-add-channel     | Prompt for a channel/playlist URL, add it, and play. |
+| =-=         | ytr-remove-channel  | Select a channel and remove it from the catalog.     |
 | =o=         | ytr-open-in-browser | Open the current track in a web browser.             |
 | =TAB=       | ytr-forward-button  | Move point to the next button.                       |
 | =<backtab>= | ytr-backward-button | Move point to the previous button.                   |
