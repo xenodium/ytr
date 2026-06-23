@@ -1059,7 +1059,10 @@ or a failure when mpv cannot play the track."
   (let ((socket (make-temp-name
                  (file-name-concat temporary-file-directory "ytr-mpv-")))
         (process nil))
+    ;; `--force-window=no' overrides a user's mpv config that forces a
+    ;; window, which would otherwise pop a blank one despite `--no-video'.
     (setq process (start-process "ytr-mpv" nil "mpv" "--no-video"
+                                 "--force-window=no"
                                  (concat "--input-ipc-server=" socket)
                                  (map-elt track :url)))
     (set-process-sentinel process #'ytr--sentinel)
