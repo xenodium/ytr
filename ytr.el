@@ -40,6 +40,18 @@
 (eval-when-compile
   (require 'cl-lib))
 
+;;; Customization
+
+(defgroup ytr nil
+  "Stream audio from YouTube channels and playlists."
+  :group 'multimedia
+  :prefix "ytr-")
+
+(defcustom ytr-data-directory (locate-user-emacs-file "ytr/")
+  "Directory where ytr keeps its state file and cached thumbnails."
+  :type 'directory
+  :group 'ytr)
+
 ;;; State
 
 (cl-defun ytr--make-channel (&key id name url (kind 'channel) tracks
@@ -304,8 +316,10 @@ yt-dlp is missing or fails."
 
 ;;; Persistence
 
-(defvar ytr--state-file (locate-user-emacs-file "ytr/state.eld")
-  "File where `ytr--state' is persisted between sessions.")
+(defun ytr--state-file ()
+  "Return the file where `ytr--state' is persisted between sessions.
+Lives under `ytr-data-directory'."
+  (file-name-concat ytr-data-directory "state.eld"))
 
 (defun ytr--save (&optional file)
   "Persist `ytr--state' to FILE, omitting the ephemeral player.
@@ -313,7 +327,7 @@ yt-dlp is missing or fails."
 FILE defaults to `ytr--state-file'.  Durable fields are saved by name
 so a future ephemeral field is not persisted by accident.  The
 `:version' key allows migrating the on-disk format later."
-  (setq file (or file ytr--state-file))
+  (setq file (or file (ytr--state-file)))
   (make-directory (file-name-directory file) t)
   (with-temp-file file
     (prin1 (list (cons :version 3)
@@ -343,7 +357,7 @@ working."
 
 FILE defaults to `ytr--state-file'.  Reads the legacy `:stations' key
 when `:channels' is absent.  Does nothing when FILE does not exist."
-  (setq file (or file ytr--state-file))
+  (setq file (or file (ytr--state-file)))
   (when (file-exists-p file)
     (let ((data (with-temp-buffer
                   (insert-file-contents file)
@@ -555,12 +569,12 @@ content is not masked by a previously rasterized version."
   "Return a local file holding TRACK's thumbnail, downloading it once.
 
 Builds the full-resolution YouTube thumbnail from the track id and
-caches it under the ytr directory, falling back to a lower resolution
-when the full one is unavailable.  Returns nil when every download
-fails."
+caches it under `ytr-data-directory', falling back to a lower
+resolution when the full one is unavailable.  Returns nil when every
+download fails."
   (when-let* ((id (map-elt track :id))
-              (file (locate-user-emacs-file
-                     (file-name-concat "ytr/thumbnails" (concat id ".jpg")))))
+              (file (file-name-concat ytr-data-directory "thumbnails"
+                                      (concat id ".jpg"))))
     (if (file-exists-p file)
         file
       (make-directory (file-name-directory file) t)

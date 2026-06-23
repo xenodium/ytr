@@ -60,6 +60,14 @@ On macOS:
 
 * Customizations
 
+** Data directory
+
+By default, ytr keeps its state file and cached thumbnails under =ytr/= in your =user-emacs-directory=.  Point =ytr-data-directory= elsewhere to keep things tidy:
+
+#+begin_src emacs-lisp :lexical no
+  (setq ytr-data-directory "~/.cache/ytr/")
+#+end_src
+
 ** Buttons (macOS SF Symbols)
 
 If you have [[https://lmno.lol/alvaro/emacs-insert-and-render-sf-symbols][SF symbol rendering in Emacs]] on macOS, enable them in the player's buttons with:
