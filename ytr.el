@@ -584,10 +584,10 @@ sentinel, where the current buffer is unrelated."
              (button (or (get-text-property (point) 'ytr-button-id) 'play)))
         (erase-buffer)
         (insert "\n")
+        ;; No track means an empty catalog; the player is not shown in that
+        ;; state (see `ytr' and `ytr-remove-channel'), so just clear.
         (if (not track)
-            (progn
-              (ytr--set-marquees nil)
-              (insert "  Nothing playing.  Press / to play, + to add a channel.\n"))
+            (ytr--set-marquees nil)
           (let* ((file (and (display-graphic-p) (ytr--thumbnail-file track)))
                  (image (and file (create-image file nil nil
                                                 :max-height ytr--thumbnail-max-height)))
@@ -711,8 +711,7 @@ channel remains, close the player."
         (message "Removed %s" (ytr--channel-name channel))
         (cond ((seq-empty-p (ytr--tracks))
                ;; Nothing left to display: close the player.
-               (ytr--stop)
-               (ytr--delete-frame))
+               (ytr--exit))
               (playing
                ;; Was playing the removed channel: stop and load another
                ;; channel's first track (ready to play, not auto-played).
@@ -1307,6 +1306,12 @@ Playback continues."
       (when (frame-live-p parent)
         (select-frame-set-input-focus parent))))
   (setq ytr--frame nil))
+
+(defun ytr--exit ()
+  "Stop playback and close the player frame.
+Unlike `ytr-quit', which only hides the frame and keeps playing."
+  (ytr--stop)
+  (ytr--delete-frame))
 
 (defun ytr--buffer-image (buffer)
   "Return the image displayed in BUFFER, or nil."
