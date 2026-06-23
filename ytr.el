@@ -638,6 +638,40 @@ sentinel, where the current buffer is unrelated."
         (user-error "Channel has no tracks"))
       (ytr--play track))))
 
+(defun ytr-remove-channel ()
+  "Select a channel and remove it, with its tracks, from the catalog.
+
+When the removed channel is the one playing, stop and load another
+channel's first track (ready to play, not auto-played).  When no
+channel remains, close the player."
+  (interactive)
+  (let ((choices (seq-map (lambda (channel)
+                            (cons (ytr--channel-name channel) channel))
+                          (map-values (map-elt ytr--state :channels)))))
+    (unless choices
+      (user-error "No channels to remove"))
+    (when-let* ((channel (map-elt choices
+                                  (completing-read "Remove channel: " choices nil t)))
+                ((yes-or-no-p (format "Remove %s? " (ytr--channel-name channel)))))
+      (let ((playing (equal (map-nested-elt ytr--state '(:player :current :channel-id))
+                            (map-elt channel :id))))
+        (setf (map-elt ytr--state :channels)
+              (map-delete (map-elt ytr--state :channels) (map-elt channel :id)))
+        (ytr--save)
+        (message "Removed %s" (ytr--channel-name channel))
+        (cond ((seq-empty-p (ytr--tracks))
+               ;; Nothing left to display: close the player.
+               (ytr--stop)
+               (ytr--delete-frame))
+              (playing
+               ;; Was playing the removed channel: stop and load another
+               ;; channel's first track (ready to play, not auto-played).
+               (ytr--stop)
+               (setf (map-elt ytr--state :last-played)
+                     (map-elt (seq-first (ytr--tracks)) :id))
+               (ytr--render))
+              (t (ytr--render)))))))
+
 (defvar ytr--loading-frames '(".  " ".. " "..." " .." "  .")
   "Frames cycled in place of the equalizer while a track is loading.")
 
@@ -1362,7 +1396,8 @@ graphical Emacs, plus the yt-dlp and mpv programs in variable
       (setq ytr--loaded t))
     (when (map-empty-p (map-elt ytr--state :channels))
       (ytr-add-channel))
-    (unless (map-empty-p (map-elt ytr--state :channels))
+    ;; Only show the player when there is something to display.
+    (unless (seq-empty-p (ytr--tracks))
       (let ((buffer (get-buffer-create "*ytr*")))
         (with-current-buffer buffer
           (unless (derived-mode-p 'ytr-mode)
