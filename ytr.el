@@ -521,6 +521,7 @@ non-nil.  Buttons are not highlighted, including on mouse hover."
    'action (lambda (_button) (call-interactively command))
    'follow-link t
    'mouse-face nil
+   'pointer 'hand
    'ytr-button-id id
    'keymap ytr-button-map
    'face (if no-box 'default '(:box (:line-width (1 . 1))))))
