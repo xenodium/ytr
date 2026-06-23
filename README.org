@@ -25,18 +25,15 @@ Add the package to ~packages.el~
   :recipe (:host github :repo "xenodium/ytr"))
 #+end_src
 
-Configure the keybindings to work with the SPACE leader key and evil mode.
+Configure ytr in ~config.el~ to work with the SPACE leader key and evil mode.
 
 #+begin_src elisp
 (use-package! ytr
   :commands ytr
+  :hook (ytr-mode . evil-emacs-state)
   :init
-  (add-to-list 'evil-emacs-state-modes 'ytr-mode)
   ;; Optional: a leader binding to open the player
   (map! :leader :desc "YouTube radio" "o y" #'ytr))
-
-;; Make the player buffer use emacs state so SPC/n/p/q etc. reach ytr-mode-map
-(add-hook 'ytr-mode-hook #'evil-emacs-state)
 #+end_src
 
 
