@@ -16,6 +16,27 @@ An Emacs package to stream YouTube audio (powered by [[https://github.com/yt-dlp
 
 Then =M-x ytr= to open the player. The first time, you'll be prompted for a channel or playlist URL.
 
+** Doom Emacs
+
+Add the package to ~packages.el~
+
+#+begin_src elisp
+(package! ytr
+  :recipe (:host github :repo "xenodium/ytr"))
+#+end_src
+
+Configure ytr in ~config.el~ to work with the SPACE leader key and evil mode.
+
+#+begin_src elisp
+(use-package! ytr
+  :commands ytr
+  :hook (ytr-mode . evil-emacs-state)
+  :init
+  ;; Optional: a leader binding to open the player
+  (map! :leader :desc "YouTube radio" "o y" #'ytr))
+#+end_src
+
+
 * Usage
 
 - =M-x ytr= toggles player display.
