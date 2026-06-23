@@ -385,6 +385,7 @@ when `:channels' is absent.  Does nothing when FILE does not exist."
     (define-key map (kbd "TAB") #'ytr-forward-button)
     (define-key map (kbd "<backtab>") #'ytr-backward-button)
     (define-key map (kbd "q") #'ytr-quit)
+    (define-key map (kbd "Q") #'ytr-exit)
     ;; The player fits its frame, so disable scrolling entirely.  Remap
     ;; the commands (not the raw wheel events) so the bindings survive
     ;; minor modes such as `pixel-scroll-precision-mode'.
@@ -725,7 +726,7 @@ channel remains, close the player."
         (message "Removed %s" (ytr--channel-name channel))
         (cond ((seq-empty-p (ytr--tracks))
                ;; Nothing left to display: close the player.
-               (ytr--exit))
+               (ytr-exit))
               (playing
                ;; Was playing the removed channel: stop and load another
                ;; channel's first track (ready to play, not auto-played).
@@ -1324,9 +1325,10 @@ Playback continues."
         (select-frame-set-input-focus parent))))
   (setq ytr--frame nil))
 
-(defun ytr--exit ()
-  "Stop playback and close the player frame.
+(defun ytr-exit ()
+  "Stop playback and close the player.
 Unlike `ytr-quit', which only hides the frame and keeps playing."
+  (interactive)
   (ytr--stop)
   (ytr--delete-frame))
 

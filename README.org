@@ -42,6 +42,7 @@ Then =M-x ytr= to open the player. The first time, you'll be prompted for a chan
 | =TAB=       | ytr-forward-button  | Move point to the next button.                       |
 | =<backtab>= | ytr-backward-button | Move point to the previous button.                   |
 | =q=         | ytr-quit            | Hide the player (playback continues).                |
+| =Q=         | ytr-exit            | Stop playback and close the player.                  |
 
 With a numeric prefix, =f= / =b= seek that many seconds; with a plain prefix (=C-u=), they seek in minutes.
 
