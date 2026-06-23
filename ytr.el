@@ -310,6 +310,7 @@ when `:channels' is absent.  Does nothing when FILE does not exist."
 (defvar ytr-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "+") #'ytr-add-channel)
+    (define-key map (kbd "-") #'ytr-remove-channel)
     (define-key map (kbd "/") #'ytr-play-track)
     (define-key map (kbd "c") #'ytr-play-channel)
     (define-key map (kbd "SPC") #'ytr-toggle-play)
