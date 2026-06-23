@@ -311,7 +311,7 @@ when `:channels' is absent.  Does nothing when FILE does not exist."
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "+") #'ytr-add-channel)
     (define-key map (kbd "/") #'ytr-play-track)
-    (define-key map (kbd "s") #'ytr-play-channel)
+    (define-key map (kbd "c") #'ytr-play-channel)
     (define-key map (kbd "SPC") #'ytr-toggle-play)
     (define-key map (kbd "n") #'ytr-next)
     (define-key map (kbd "p") #'ytr-previous)
